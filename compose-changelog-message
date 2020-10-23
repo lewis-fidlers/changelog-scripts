@@ -1,0 +1,31 @@
+#!/bin/sh
+# ------------------------------------------------------------
+set -euo pipefail # Stop running the script on first error...
+# ------------------------------------------------------------
+
+branch=$(git symbolic-ref --short HEAD)
+key=`grep -o "WP10-[0-9.]\+" <<< $branch`
+type=""
+jiraLink=""
+
+# Clean up this code
+function setType {
+  if [[ $branch == "$1/"* ]]
+  then
+  type=" $2:"
+  fi
+}
+
+setType feature FEATURE
+setType bugfix BUGFIX
+setType hotfix HOTFIX
+
+if [ ${key:+1} ]
+then
+jiraLink="[$key](https://borealisgroup.atlassian.net/browse/$key)"
+fi
+
+pbcopy <<< "
+### $(date '+%d-%m-%Y')
+
+* $jiraLink$type description_for_non_developers"

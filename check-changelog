@@ -1,0 +1,36 @@
+#!/bin/sh
+branch=$(git symbolic-ref --short HEAD)
+
+if [[ $branch == "feature/"* ]] || [[ $branch == "hotfix/"* ]] || [[ $branch == "bugfix/"* ]] || [[ ! -z "${DEBUG}" ]]
+then
+count=`git diff --name-status master | grep "changelog.md" | wc -l`
+if [ $count -eq 0 ] || [[ ! -z "${DEBUG}" ]]
+  then
+    echo '❌ Please add a changelog entry'
+    exec < /dev/tty
+    read -p "Would you like to add an entry now?" -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+      sh ./bin/compose-changelog-message
+      "${EDITOR:-vi}" changelog.md
+      new_count=`git diff --name-status master | grep "changelog.md" | wc -l`
+
+      git add changelog.md
+      git commit -m 'Changelog entry'
+      if [ $new_count -ne 0 ]
+      then
+        echo '✅ Changelog entry detected \nGood job keeping our changelog up to date'
+        exit 0;
+      fi
+      echo 'You said you were going to add a changelog entry, you promised! You made me sad! 😭 ';exit 1;
+    else
+      exit 0;
+    fi
+  else
+    echo '✅ Changelog entry detected \n Good job keeping our changelog up to date'
+    exit 0;
+  fi
+else
+  exit 0;
+fi

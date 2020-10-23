@@ -1,0 +1,5 @@
+eligible_branch_prefixes:
+  - feature
+  - hotfix
+  - bugfix
+eligible_branch_delimiter: "/"
